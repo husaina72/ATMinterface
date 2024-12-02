@@ -217,7 +217,7 @@ class BankAccount {
 
 public class ATMinterface {
     public static void main(String[] args) {
-        BankAccount ba = new BankAccount("Husaina", "1001");
+        BankAccount ba = new BankAccount("Husaina Chakera", "1001");
         ba.checkId();
     }
 }
