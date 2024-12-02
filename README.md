@@ -1,5 +1,33 @@
 # ATM Interface
+
+## Run Locally
+
+#### Clone the project
+
+```bash
+  git clone https://github.com/husaina72/ATMinterface.git
 ```
+
+#### Go to the project directory
+
+```bash
+  cd ATMinterface
+```
+
+#### Compile Java Source Code Into Bytecode Class Files
+
+```bash
+  javac ATMinterface.java
+```
+
+#### Execute The Compiled Java Program
+
+```bash
+  java ATMinterface
+```
+
+## Code
+```java
 import java.util.Scanner;
 
 class BankAccount {
