@@ -30,195 +30,158 @@
 ```java
 import java.util.Scanner;
 
-class BankAccount {
-    int balance;
-    int prevTransaction;
-    String customerName;
-    String customerId;
-    int flag = 0;
+class Main {
+    private int balance = 0;
+    private int lastTransactionAmount = 0;
+    private String customerName;
+    private String customerId;
+    private int loginAttempts = 0;
 
-    BankAccount(String cName, String cId) {
-        customerName = cName;
-        customerId = cId;
+    public Main(String name, String id) {
+        this.customerName = name;
+        this.customerId = id;
     }
 
-    public final void clrscr() {
+    private void clearConsole() {
         try {
-            try {
-            final String os = System.getProperty("os.name");
+            System.out.print("\033[H\033[2J"); // ANSI escape code for clearing console
+            System.out.flush();
+        } catch (Exception e) {
+            System.out.println("Unable to clear the console.");
+        }
+    }
 
-            if (os.contains("Windows")) {
-                Runtime.getRuntime().exec("cls");
+    private void authenticateUser() {
+        clearConsole();
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Hello, " + customerName + "!");
+        System.out.print("Please enter your Customer ID or PIN: ");
+        String enteredId = scanner.nextLine();
+
+        if (enteredId.equals(customerId)) {
+            clearConsole();
+            displayMenu();
+        } else {
+            System.out.println("Invalid ID or PIN.");
+            loginAttempts++;
+            if (loginAttempts < 3) {
+                authenticateUser();
             } else {
-                Runtime.getRuntime().exec("clear");
-            }
-        } catch (final Exception e) {
-            new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
-        } 
-    } catch (final Exception es) {
-        // System.out.println("nothing here!");
-    }
-
-    }
-
-    void checkId() {
-        clrscr();
-        System.out.println("Welcome " + customerName);
-        System.out.println();
-        System.out.print("Please enter the Customer ID or PIN: ");
-        Scanner id = new Scanner(System.in);
-        String chk = id.nextLine();
-        if (chk.equals(customerId)) {
-            clrscr();
-            showMenu();
-        } else {
-            System.out.println("=================================");
-            System.out.println("Wrong Login!!");
-            System.out.println("=================================");
-
-            if (flag < 3) {
-                flag++;
-                checkId();
+                System.out.println("Too many failed attempts. Exiting system.");
             }
         }
     }
 
-    void deposit(int amount) {
-        if (amount != 0) {
-            balance = balance + amount;
-            prevTransaction = amount;
+    private void addFunds(int amount) {
+        if (amount > 0) {
+            balance += amount;
+            lastTransactionAmount = amount;
+            System.out.println("Successfully deposited $" + amount);
+        } else {
+            System.out.println("Deposit amount must be positive.");
         }
     }
 
-    void withdraw(int amount) {
-        if (this.balance > amount) {
-            balance = balance - amount;
-            prevTransaction = -amount;
+    private void deductFunds(int amount) {
+        if (amount <= balance && amount > 0) {
+            balance -= amount;
+            lastTransactionAmount = -amount;
+            System.out.println("Successfully withdrew $" + amount);
+        } else if (amount > balance) {
+            System.out.println("Insufficient funds to withdraw $" + amount);
         } else {
-            clrscr();
-            System.out.println("=================================");
-            System.out.println("Sufficient Balance not available for the withdrawl!");
-            System.out.println("=================================");
+            System.out.println("Withdrawal amount must be positive.");
         }
     }
 
-    void getPrevTransaction() {
-        if (prevTransaction > 0) {
-            System.out.println("Deposited: " + prevTransaction);
-        } else if (prevTransaction < 0) {
-            System.out.println("Withdraw: " + Math.abs(prevTransaction));
+    private void showLastTransaction() {
+        if (lastTransactionAmount > 0) {
+            System.out.println("Last Transaction: Deposited $" + lastTransactionAmount);
+        } else if (lastTransactionAmount < 0) {
+            System.out.println("Last Transaction: Withdrew $" + Math.abs(lastTransactionAmount));
         } else {
-            System.out.println("No Transaction Occured ");
+            System.out.println("No transactions have been made yet.");
         }
     }
 
-    public void transfer(double amount, BankAccount acc) {
-        if (this.balance < amount) {
-            clrscr();
-            System.out.println("=================================");
-            System.out.println("Transfer Fails due to insufficient balance!");
-            System.out.println("=================================");
-        } else {
+    private void transferFunds(int amount, Main recipient) {
+        if (amount > 0 && amount <= balance) {
             this.balance -= amount;
-            acc.balance += amount;
-            System.out.println("Account of " + this.customerName + " becomes $" + this.balance);
-            System.out.println("Account of " + acc.customerName + " becomes $" + acc.balance);
-            System.out.println("\n");
+            recipient.balance += amount;
+            System.out.println("Successfully transferred $" + amount + " to " + recipient.customerName);
+        } else if (amount > balance) {
+            System.out.println("Transfer failed due to insufficient funds.");
+        } else {
+            System.out.println("Transfer amount must be positive.");
         }
     }
 
-    private void showMenu() {
+    private void displayMenu() {
+        Scanner scanner = new Scanner(System.in);
         char option;
-        Scanner sc = new Scanner(System.in);
-        System.out.println("Welcome " + customerName);
-        System.out.println("Your ID is  " + customerId);
-        do {
-            System.out.println("\n");
-            System.out.println("\n");
-            System.out.println("A. Check Balance");
-            System.out.println("B. Deposit");
-            System.out.println("C. Withdraw");
-            System.out.println("D. Previous Transaction");
-            System.out.println("E. Transfer");
-            System.out.println("F. Exit");
 
-            System.out.println("=================================");
-            System.out.println("Enter the option");
-            System.out.println("=================================");
-            option = sc.next().charAt(0);
-            option = Character.toUpperCase(option);
-            System.out.println("\n");
+        do {
+            System.out.println("\nMenu:");
+            System.out.println("A. Check Balance");
+            System.out.println("B. Deposit Funds");
+            System.out.println("C. Withdraw Funds");
+            System.out.println("D. View Last Transaction");
+            System.out.println("E. Transfer Funds");
+            System.out.println("F. Exit");
+            System.out.print("Choose an option: ");
+            option = scanner.next().toUpperCase().charAt(0);
 
             switch (option) {
                 case 'A':
-                    clrscr();
-                    System.out.println("================");
-                    System.out.println("Balance " + balance);
-                    System.out.println("================");
-                    System.out.println("\n");
+                    clearConsole();
+                    System.out.println("Your current balance is: $" + balance);
                     break;
 
                 case 'B':
-                    clrscr();
-                    System.out.println("================");
-                    System.out.println("Enter the amount to deposit");
-                    System.out.println("================");
-                    int amount = sc.nextInt();
-                    deposit(amount);
-                    System.out.println("\n");
+                    clearConsole();
+                    System.out.print("Enter amount to deposit: ");
+                    int depositAmount = scanner.nextInt();
+                    addFunds(depositAmount);
                     break;
-                
+
                 case 'C':
-                    clrscr();
-                    System.out.println("================");
-                    System.out.println("Enter the amount to withdraw");
-                    System.out.println("================");
-                    int amount2 = sc.nextInt();
-                    withdraw(amount2);
-                    System.out.println("\n");
+                    clearConsole();
+                    System.out.print("Enter amount to withdraw: ");
+                    int withdrawalAmount = scanner.nextInt();
+                    deductFunds(withdrawalAmount);
                     break;
 
                 case 'D':
-                    clrscr();
-                    System.out.println("================");
-                    getPrevTransaction();
-                    System.out.println("================");
-                    System.out.println("\n");
+                    clearConsole();
+                    showLastTransaction();
                     break;
 
                 case 'E':
-                    clrscr();
-                    System.out.println("***************");
-                    System.out.println("To whom");
-                    BankAccount bb = new BankAccount("Raj", "1002");
-                    System.out.println(bb.customerName);
-                    System.out.println("***************");
-                    System.out.println("Amount to Transfer");
-                    double am = sc.nextDouble();
-                    System.out.println("***************");
-                    transfer(am, bb);
+                    clearConsole();
+                    System.out.print("Enter recipient's name: ");
+                    scanner.nextLine(); // Consume newline
+                    String recipientName = scanner.nextLine();
+                    Main recipient = new Main(recipientName, "TEMP123"); // Temporary ID for example
+                    System.out.print("Enter amount to transfer: ");
+                    int transferAmount = scanner.nextInt();
+                    transferFunds(transferAmount, recipient);
                     break;
 
                 case 'F':
-                    clrscr();
-                    System.out.println("***************");
+                    clearConsole();
+                    System.out.println("Thank you for banking with us!");
                     break;
-                
+
                 default:
-                    clrscr();
-                    System.out.println("Invalid Option!!! Please Enter Again");
+                    clearConsole();
+                    System.out.println("Invalid option. Please try again.");
             }
-
         } while (option != 'F');
-        System.out.println("ThankYou For using our services");
-
     }
-}
 
-public class ATMinterface {
     public static void main(String[] args) {
-        BankAccount ba = new BankAccount("Husaina", "1001");
-        ba.checkId();
+        Main account = new Main("John Doe", "1234");
+        account.authenticateUser();
     }
 }
 ```
